@@ -10,18 +10,20 @@
 @media (prefers-color-scheme:dark){:root{--bg:#111715;--card:#1a2220;--fg:#e6eeeb;--muted:#9db0a9;--line:#2c3834;--line2:#5b6d67;--accent:#5cc49a;--box:#232d2a;--hl:#4a4126;--gap:#5a2f28;--ok:#3fb27a;--ng:#e2735f;--star:#f2c14e;color-scheme:dark}}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+button,select{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+button{-webkit-user-select:none;user-select:none}
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--fg);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:16px;padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
 .wrap{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:10px;min-height:100%}
 select,button{font:inherit}
-select{width:100%;font-size:15px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);min-height:44px}
+select{width:100%;font-size:16px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);min-height:44px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{flex:1;min-width:0;font-size:13px;padding:8px 4px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--fg);min-height:38px;cursor:pointer;white-space:nowrap}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .stat{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
 .bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:flex}
 .bar i{display:block;height:100%}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;flex:1;min-height:320px;overflow-wrap:anywhere}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:46vh;overflow-wrap:anywhere}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
 .unit{font-size:12px;color:var(--muted)}
 .badge{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
@@ -36,7 +38,13 @@ select{width:100%;font-size:15px;padding:10px;border-radius:10px;border:1px soli
 .ans b{display:block;font-size:12px;color:var(--muted);font-weight:600}
 .ans p{margin:2px 0 0;line-height:1.6;white-space:pre-line}
 .show{margin-top:auto;font-size:16px;font-weight:700;min-height:52px;border-radius:12px;border:2px dashed var(--line2);background:transparent;color:var(--fg);cursor:pointer}
+.dock{position:sticky;bottom:0;background:var(--bg);padding:8px 0 calc(6px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;margin-top:auto}
 .btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.rev{display:grid;grid-template-columns:64px 1fr 64px;gap:8px}
+.rev button{min-height:60px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--fg);font-size:18px;cursor:pointer}
+.rev .main{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+.card{cursor:pointer}
+.hint{margin-top:auto;text-align:center;font-size:12px;color:var(--muted)}
 .btns button{min-height:56px;border-radius:12px;border:none;color:#fff;font-size:17px;font-weight:700;cursor:pointer}
 .bng{background:var(--ng)}.bok{background:var(--ok)}
 .nav{display:flex;justify-content:space-between;gap:10px}
@@ -57,8 +65,10 @@ button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outlin
   <div class="stat"><span id="pos"></span><span id="tally"></span></div>
   <div class="bar" id="bar"></div>
   <div class="card" id="card"></div>
-  <div class="btns" id="btns"><button class="bng" id="bNg">不正解</button><button class="bok" id="bOk">正解</button></div>
-  <div class="nav"><button id="prev">← 前へ</button><button id="next">次へ →</button></div>
+  <div class="dock">
+    <div class="rev" id="rev"><button id="prev" aria-label="前のカード">←</button><button class="main" id="showBtn">答えを見る</button><button id="next" aria-label="次のカード">→</button></div>
+    <div class="btns" id="btns" hidden><button class="bng" id="bNg">不正解</button><button class="bok" id="bOk">正解</button></div>
+  </div>
 </div>
 <script>
 const DATA=
@@ -95,9 +105,9 @@ function render(){
   if(!deck.length||idx>=deck.length){
     $('pos').textContent=deck.length?`${deck.length} / ${deck.length}`:'0枚';
     el.innerHTML=`<div class="empty">${deck.length?'この範囲は最後まで終わりました。':'この条件のカードはありません。'}<br>絞り込みを「前回不正解」や「★ブックマーク」に変えると見直しができます。</div>`;
-    $('btns').hidden=true;return;
+    $('btns').hidden=true;$('rev').hidden=false;$('showBtn').disabled=true;return;
   }
-  $('btns').hidden=!shown;
+  $('btns').hidden=!shown;$('rev').hidden=shown;$('showBtn').disabled=false;
   const c=deck[idx];st.cur=c.id;save();
   $('pos').textContent=`${idx+1} / ${deck.length}`;
   const r=st.res[c.id];
@@ -107,15 +117,15 @@ function render(){
   h+=`<div class="q${c.q.length>14?' long':''}">${esc(c.q)}</div>`;
   if(c.img)h+=`<div class="img">${c.img}</div>`;
   if(shown)h+='<div class="ans">'+c.a.map(x=>`<div>${x.h?`<b>${esc(x.h)}</b>`:''}<p>${esc(x.v)}</p></div>`).join('')+'</div>';
-  else h+='<button class="show" id="show">答えを見る</button>';
+  else h+='<div class="hint">カードをタップしても答えが出ます</div>';
   el.innerHTML=h;
   $('star').onclick=e=>{e.stopPropagation();if(st.star[c.id])delete st.star[c.id];else st.star[c.id]=1;save();render()};
-  if(!shown)$('show').onclick=()=>{shown=true;render()};
+  el.onclick=()=>{if(!shown){shown=true;render()}};
 }
 function answer(ok){const c=deck[idx];if(!c)return;st.res[c.id]=ok?'ok':'ng';save();go(1);fillSelect()}
-function go(d){idx=Math.max(0,Math.min(deck.length,idx+d));shown=false;render()}
+function go(d){idx=Math.max(0,Math.min(deck.length,idx+d));shown=false;render();window.scrollTo(0,0)}
 $('bOk').onclick=()=>answer(true);$('bNg').onclick=()=>answer(false);
-$('prev').onclick=()=>go(-1);$('next').onclick=()=>go(1);
+$('prev').onclick=()=>go(-1);$('showBtn').onclick=()=>{shown=true;render()};$('next').onclick=()=>go(1);
 $('unit').onchange=e=>{st.unit=e.target.value;st.cur=null;save();build(false)};
 document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{st.filter=b.dataset.f;save();build(true)});
 fillSelect();build(true);
