@@ -9,6 +9,7 @@
 :root{--bg:#eef2f1;--card:#fff;--fg:#17211e;--muted:#5f6d68;--line:#d6dedb;--line2:#9aa8a3;--accent:#1f6b52;--box:#f3f6f5;--hl:#fff2c7;--gap:#f3c9c0;--ok:#22804f;--ng:#b5432f;--star:#d99a00}
 @media (prefers-color-scheme:dark){:root{--bg:#111715;--card:#1a2220;--fg:#e6eeeb;--muted:#9db0a9;--line:#2c3834;--line2:#5b6d67;--accent:#5cc49a;--box:#232d2a;--hl:#4a4126;--gap:#5a2f28;--ok:#3fb27a;--ng:#e2735f;--star:#f2c14e;color-scheme:dark}}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--fg);font-family:"Hiragino Sans","Noto Sans JP",system-ui,sans-serif;font-size:16px;padding:max(10px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left))}
 .wrap{max-width:600px;margin:0 auto;display:flex;flex-direction:column;gap:10px;min-height:100%}
@@ -51,7 +52,7 @@ button:focus-visible,select:focus-visible{outline:3px solid var(--accent);outlin
     <button class="chip" data-f="all">すべて</button>
     <button class="chip" data-f="new">未学習</button>
     <button class="chip" data-f="ng">前回不正解</button>
-    <button class="chip" data-f="star">★ブックマーク</button>
+    <button class="chip" data-f="star">★印</button>
   </div>
   <div class="stat"><span id="pos"></span><span id="tally"></span></div>
   <div class="bar" id="bar"></div>
